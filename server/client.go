@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/SHyx0rmZ/go-bitbucket/bitbucket"
 	"io"
 	"net/http"
@@ -171,8 +170,6 @@ func (c *client) requestPost(url string, v interface{}, data interface{}) error 
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("\n\n%s\n\n\n", jsonBytes)
 
 	response, err := c.do("POST", url, bytes.NewBuffer(jsonBytes))
 	if err != nil {

@@ -1,9 +1,6 @@
 package server
 
-import (
-	"fmt"
-	"github.com/SHyx0rmZ/go-bitbucket/bitbucket"
-)
+import "github.com/SHyx0rmZ/go-bitbucket/bitbucket"
 
 type project struct {
 	client *client
@@ -27,7 +24,6 @@ func (p project) GetKey() string {
 func (p *project) Repositories() ([]bitbucket.Repository, error) {
 	repositories := make([]repository, 0, 0)
 
-	fmt.Printf("%#v\n", p)
 	err := p.client.pagedRequest("/rest/api/1.0/projects/"+p.Key+"/repos", &repositories)
 	if err != nil {
 		return nil, err
