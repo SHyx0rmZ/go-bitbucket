@@ -17,9 +17,12 @@ type client struct {
 	auth bitbucket.Auth
 }
 
-func NewClient() (bitbucket.Client, error) {
+func NewClient(httpClient *http.Client) (bitbucket.Client, error) {
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	}
 	return &client{
-		httpClient: http.DefaultClient,
+		httpClient: httpClient,
 		endpoint:   "https://api.bitbucket.org/2.0/",
 	}, nil
 }
@@ -38,7 +41,7 @@ func (c *client) do(method string, url string, body io.Reader) (*http.Response, 
 		request.Header.Set("Content-Type", "application/json")
 	}
 
-	response, err := c.client.Do(request)
+	response, err := c.httpClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -92,14 +95,14 @@ func (c *client) requestPost(url string, v interface{}, data interface{}) error 
 }
 
 func (c *client) Users() ([]bitbucket.User, error) {
-	var user user
+	var u user
 
-	err := c.request("user", &user)
+	err := c.request("user", &u)
 	if err != nil {
 		return nil, err
 	}
 
-	return []*user {&user}, nil
+	return []bitbucket.User {&u}, nil
 }
 
 func (client) Projects() ([]bitbucket.Project, error) {
