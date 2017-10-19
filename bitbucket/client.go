@@ -7,6 +7,7 @@ type contextKeyHTTPClient struct{}
 type Client interface {
 	Projects() ([]Project, error)
 	Users() ([]User, error)
+	CurrentUser() (string, error)
 	Repository(path string) (Repository, error)
 }
 

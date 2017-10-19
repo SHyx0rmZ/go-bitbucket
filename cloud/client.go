@@ -93,6 +93,17 @@ func (c *client) requestPost(url string, v interface{}, data interface{}) error 
 	return nil
 }
 
+func (c *client) CurrentUser() (string, error) {
+	var u user
+
+	err := c.request("/user", &u)
+	if err != nil {
+		return "", err
+	}
+
+	return u.Name, nil
+}
+
 func (c *client) Users() ([]bitbucket.User, error) {
 	var u user
 

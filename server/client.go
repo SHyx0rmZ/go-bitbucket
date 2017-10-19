@@ -99,6 +99,20 @@ func (c *client) Repository(name string) (bitbucket.Repository, error) {
 	return &result, nil
 }
 
+func (c *client) CurrentUser() (string, error) {
+	response, err := c.do("GET", "/rest/api/1.0/users?limit=0", strings.NewReader(""))
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return "", errors.New(response.Status)
+	}
+
+	return response.Header.Get("X-Ausername"), nil
+}
+
 func (c *client) Users() ([]bitbucket.User, error) {
 	users := make([]user, 0, 0)
 
