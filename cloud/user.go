@@ -1,9 +1,9 @@
 package cloud
 
 type user struct {
-	Name         string `json:"username"`
-	DisplayName  string `json:"display_name"`
-	Type         string `json:"type"`
+	Name        string `json:"username"`
+	DisplayName string `json:"display_name"`
+	Type        string `json:"type"`
 }
 
 func (u *user) GetName() string {
