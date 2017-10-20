@@ -1,5 +1,7 @@
 package cloud
 
+import "time"
+
 type mergeEndpoint struct {
 	Commit struct{
 		Hash string `json:"hash"`
@@ -13,8 +15,8 @@ type pullrequest struct {
 	Id int `json:"id"`
 	Title string `json:"title"`
 	Description string `json:"description"`
-	CreatedDate string `json:"created_on"`
-	UpdatedDate string `json:"updated_on"`
+	CreatedDate time.Time `json:"created_on"`
+	UpdatedDate time.Time `json:"updated_on"`
 	State string `json:"state"`
 	Author user `json:"author"`
 	Source mergeEndpoint `json:"source"`
@@ -27,7 +29,7 @@ func (pr *pullrequest) GetID() int {
 
 func (pr *pullrequest) GetVersion() int {
 	// no version, maybe unix epoch of updatedDate?
-	return 0
+	return int(pr.UpdatedDate.Unix())
 }
 
 func (pr *pullrequest) GetTitle() string {
