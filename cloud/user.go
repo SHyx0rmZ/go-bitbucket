@@ -9,3 +9,7 @@ type user struct {
 func (u *user) GetName() string {
 	return u.Name
 }
+
+func (u *user) GetDisplayName() string {
+	return u.DisplayName
+}

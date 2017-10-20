@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"reflect"
 )
 
 type client struct {
@@ -26,8 +27,64 @@ func NewClient(httpClient *http.Client) (bitbucket.Client, error) {
 	}, nil
 }
 
+func (c *client) SetBasicAuth(auth *bitbucket.BasicAuth) {
+	c.auth = auth
+}
+
+func (c *client) CurrentUser() (string, error) {
+	var u user
+
+	err := c.request("/user", &u)
+	if err != nil {
+		return "", err
+	}
+
+	return u.Name, nil
+}
+
+func (c *client) Users() ([]bitbucket.User, error) {
+	/* Bitbucket cloud does not allow access to a list of all users. */
+	return []bitbucket.User{}, nil
+}
+
+func (c *client) Projects() ([]bitbucket.Project, error) {
+	return nil, errors.New("Not Implemented")
+}
+
+func (c *client)Repository(path string) (bitbucket.Repository, error) {
+	var r repository
+
+	if strings.Contains(path, "..") {
+		return nil, errors.New("no recursive paths allowed")
+	}
+
+	c.request("/repositories/"+path, &r)
+
+	return &r, nil
+}
+
+func (c *client) Repositories() ([]bitbucket.Repository, error) {
+	repositories := make([]repository, 0, 0)
+
+	err := c.pagedRequest("/repositories?role=member", &repositories)
+	if err != nil {
+		return nil, err
+	}
+
+	bitbucketRepositories := make([]bitbucket.Repository, len(repositories))
+	for index := range repositories {
+		bitbucketRepositories[index] = &repositories[index]
+	}
+
+	return bitbucketRepositories, nil
+}
+
+func (c *client) getUrl(api_resource string) (url string) {
+	return strings.TrimRight(c.endpoint, "/") + api_resource
+}
+
 func (c *client) do(method string, url string, body io.Reader) (*http.Response, error) {
-	request, err := http.NewRequest(method, strings.TrimRight(c.endpoint, "/")+url, body)
+	request, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
 	}
@@ -48,11 +105,13 @@ func (c *client) do(method string, url string, body io.Reader) (*http.Response, 
 	return response, nil
 }
 
-func (c *client) request(url string, v interface{}) error {
-	response, err := c.do("GET", url, strings.NewReader(""))
+func (c *client) request(api_resource string, v interface{}) error {
+	response, err := c.do("GET", c.getUrl(api_resource), strings.NewReader(""))
 	if err != nil {
 		return err
 	}
+
+	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
 		return errors.New(response.Status)
@@ -65,19 +124,25 @@ func (c *client) request(url string, v interface{}) error {
 		return err
 	}
 
+	if ca, ok := v.(clientAware); ok {
+		ca.SetClient(c)
+	}
+
 	return nil
 }
 
-func (c *client) requestPost(url string, v interface{}, data interface{}) error {
+func (c *client) requestPost(api_resource string, v interface{}, data interface{}) error {
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
 
-	response, err := c.do("POST", url, bytes.NewBuffer(jsonBytes))
+	response, err := c.do("POST", c.getUrl(api_resource), bytes.NewBuffer(jsonBytes))
 	if err != nil {
 		return err
 	}
+
+	defer response.Body.Close()
 
 	if response.StatusCode != 201 {
 		return errors.New(response.Status)
@@ -90,39 +155,81 @@ func (c *client) requestPost(url string, v interface{}, data interface{}) error 
 		return err
 	}
 
+	if ca, ok := v.(clientAware); ok {
+		ca.SetClient(c)
+	}
+
 	return nil
+}
+
+type clientAware interface {
+	SetClient(c *client)
 }
 
 func (c *client) SetHTTPClient(hc *http.Client) {
 	c.httpClient = hc
 }
 
-func (c *client) CurrentUser() (string, error) {
-	var u user
+type PagedResult struct {
+	PageLength    bool              `json:"isLastPage"`
+	Values        []json.RawMessage `json:"values,omitempty"`
+	NextPageURL   string            `json:"next,omitempty"`
+}
 
-	err := c.request("/user", &u)
-	if err != nil {
-		return "", err
+func (c *client) pagedRequest(api_resource string, v interface{}) error {
+	resultValue := reflect.ValueOf(v)
+
+	if resultValue.Kind() != reflect.Ptr || resultValue.IsNil() {
+		return errors.New("Invalid return type")
 	}
 
-	return u.Name, nil
-}
+	resultList := reflect.ValueOf(v).Elem()
+	resultElemType := resultList.Type().Elem()
 
-func (c *client) Users() ([]bitbucket.User, error) {
-	var u user
+	url := c.getUrl(api_resource)
 
-	err := c.request("/user", &u)
-	if err != nil {
-		return nil, err
+	for {
+		var results PagedResult
+
+		response, err := c.do("GET", url, strings.NewReader(""))
+		if err != nil {
+			return err
+		}
+
+		if response.StatusCode != 200 {
+			response.Body.Close()
+			return errors.New(response.Status)
+		}
+
+		decoder := json.NewDecoder(response.Body)
+
+		err = decoder.Decode(&results)
+		response.Body.Close()
+		if err != nil {
+			return err
+		}
+
+		for _, jsonBytes := range results.Values {
+			newResult := reflect.New(resultElemType).Elem()
+
+			err = json.Unmarshal(jsonBytes, newResult.Addr().Interface())
+			if err != nil {
+				return err
+			}
+
+			if ca, ok := newResult.Addr().Interface().(clientAware); ok {
+				ca.SetClient(c)
+			}
+
+			resultList.Set(reflect.Append(resultList, newResult))
+		}
+
+		if results.NextPageURL == "" {
+			break
+		}
+
+		url = results.NextPageURL
 	}
 
-	return []bitbucket.User{&u}, nil
-}
-
-func (client) Projects() ([]bitbucket.Project, error) {
-	return nil, errors.New("Not Implemented")
-}
-
-func (client) Repository(path string) (bitbucket.Repository, error) {
-	return nil, errors.New("Not Implemented")
+	return nil
 }

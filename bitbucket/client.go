@@ -10,6 +10,7 @@ type Client interface {
 	Projects() ([]Project, error)
 	Users() ([]User, error)
 	CurrentUser() (string, error)
+	Repositories() ([]Repository, error)
 	Repository(path string) (Repository, error)
 	SetHTTPClient(client *http.Client)
 }
