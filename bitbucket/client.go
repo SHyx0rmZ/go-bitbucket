@@ -1,5 +1,7 @@
 package bitbucket
 
+import "net/http"
+
 var HTTPClient contextKeyHTTPClient
 
 type contextKeyHTTPClient struct{}
@@ -9,6 +11,7 @@ type Client interface {
 	Users() ([]User, error)
 	CurrentUser() (string, error)
 	Repository(path string) (Repository, error)
+	SetHTTPClient(client *http.Client)
 }
 
 //

@@ -93,6 +93,10 @@ func (c *client) requestPost(url string, v interface{}, data interface{}) error 
 	return nil
 }
 
+func (c *client) SetHTTPClient(hc *http.Client) {
+	c.httpClient = hc
+}
+
 func (c *client) CurrentUser() (string, error) {
 	var u user
 
