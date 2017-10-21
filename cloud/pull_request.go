@@ -3,7 +3,7 @@ package cloud
 import "time"
 
 type mergeEndpoint struct {
-	Commit struct{
+	Commit struct {
 		Hash string `json:"hash"`
 	} `json:"commit"`
 	Repository repository `json:"repository"`
@@ -12,14 +12,14 @@ type mergeEndpoint struct {
 type pullrequest struct {
 	client *client
 
-	Id int `json:"id"`
-	Title string `json:"title"`
-	Description string `json:"description"`
-	CreatedDate time.Time `json:"created_on"`
-	UpdatedDate time.Time `json:"updated_on"`
-	State string `json:"state"`
-	Author user `json:"author"`
-	Source mergeEndpoint `json:"source"`
+	Id          int           `json:"id"`
+	Title       string        `json:"title"`
+	Description string        `json:"description"`
+	CreatedDate time.Time     `json:"created_on"`
+	UpdatedDate time.Time     `json:"updated_on"`
+	State       string        `json:"state"`
+	Author      user          `json:"author"`
+	Source      mergeEndpoint `json:"source"`
 	Destination mergeEndpoint `json:"destination"`
 }
 

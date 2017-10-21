@@ -7,8 +7,8 @@ import (
 	"github.com/SHyx0rmZ/go-bitbucket/bitbucket"
 	"io"
 	"net/http"
-	"strings"
 	"reflect"
+	"strings"
 )
 
 type client struct {
@@ -51,7 +51,7 @@ func (c *client) Projects() ([]bitbucket.Project, error) {
 	return nil, errors.New("Not Implemented")
 }
 
-func (c *client)Repository(path string) (bitbucket.Repository, error) {
+func (c *client) Repository(path string) (bitbucket.Repository, error) {
 	var r repository
 
 	if strings.Contains(path, "..") {
@@ -171,9 +171,9 @@ func (c *client) SetHTTPClient(hc *http.Client) {
 }
 
 type PagedResult struct {
-	PageLength    bool              `json:"isLastPage"`
-	Values        []json.RawMessage `json:"values,omitempty"`
-	NextPageURL   string            `json:"next,omitempty"`
+	PageLength  bool              `json:"isLastPage"`
+	Values      []json.RawMessage `json:"values,omitempty"`
+	NextPageURL string            `json:"next,omitempty"`
 }
 
 func (c *client) pagedRequest(api_resource string, v interface{}) error {
