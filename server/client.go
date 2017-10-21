@@ -23,8 +23,10 @@ type clientAware interface {
 	SetClient(c *client)
 }
 
-func NewClient(ctx context.Context, endpoint string) (bitbucket.Client, error) {
-	hc := contextHTTPClient(ctx)
+func NewClient(ctx context.Context, hc *http.Client, endpoint string) (bitbucket.Client, error) {
+	if hc == nil {
+		hc = contextHTTPClient(ctx)
+	}
 	auth := contextBitbucketAuth(ctx)
 
 	return &client{
