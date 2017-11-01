@@ -51,7 +51,7 @@ func (c *client) Users() ([]bitbucket.User, error) {
 }
 
 func (c *client) Projects() ([]bitbucket.Project, error) {
-	return nil, errors.New("Not Implemented")
+	return nil, errors.New("not implemented")
 }
 
 func (c *client) Repository(path string) (bitbucket.Repository, error) {
@@ -183,7 +183,7 @@ func (c *client) pagedRequest(apiResource string, v interface{}) error {
 	resultValue := reflect.ValueOf(v)
 
 	if resultValue.Kind() != reflect.Ptr || resultValue.IsNil() {
-		return errors.New("Invalid return type")
+		return errors.New("invalid return type")
 	}
 
 	resultList := reflect.ValueOf(v).Elem()
