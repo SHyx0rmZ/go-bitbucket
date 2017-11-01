@@ -55,3 +55,7 @@ func (pr *pullrequest) GetFromRef() string {
 func (pr *pullrequest) GetToRef() string {
 	return pr.Destination.Commit.Hash
 }
+
+func (pr *pullrequest) SetClient(c *client) {
+	pr.client = c
+}
