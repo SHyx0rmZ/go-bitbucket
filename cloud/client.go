@@ -17,13 +17,16 @@ type client struct {
 	auth       bitbucket.Auth
 }
 
-func NewClient(httpClient *http.Client) (bitbucket.Client, error) {
+func NewClient(httpClient *http.Client, endpoint string) (bitbucket.Client, error) {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
+	if endpoint == "" {
+		endpoint = "https://api.bitbucket.org/"
+	}
 	return &client{
 		httpClient: httpClient,
-		endpoint:   "https://api.bitbucket.org/2.0/",
+		endpoint:   endpoint,
 	}, nil
 }
 
@@ -34,7 +37,7 @@ func (c *client) SetBasicAuth(auth *bitbucket.BasicAuth) {
 func (c *client) CurrentUser() (string, error) {
 	var u user
 
-	err := c.request("/user", &u)
+	err := c.request("/2.0/user", &u)
 	if err != nil {
 		return "", err
 	}
@@ -58,7 +61,7 @@ func (c *client) Repository(path string) (bitbucket.Repository, error) {
 		return nil, errors.New("no recursive paths allowed")
 	}
 
-	c.request("/repositories/"+path, &r)
+	c.request("/2.0/repositories/"+path, &r)
 
 	return &r, nil
 }
@@ -66,7 +69,7 @@ func (c *client) Repository(path string) (bitbucket.Repository, error) {
 func (c *client) Repositories() ([]bitbucket.Repository, error) {
 	repositories := make([]repository, 0, 0)
 
-	err := c.pagedRequest("/repositories?role=member", &repositories)
+	err := c.pagedRequest("/2.0/repositories?role=member", &repositories)
 	if err != nil {
 		return nil, err
 	}

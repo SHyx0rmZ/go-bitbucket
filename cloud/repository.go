@@ -27,7 +27,7 @@ func (r *repository) GetDisplayName() string {
 func (r *repository) PullRequests() ([]bitbucket.PullRequest, error) {
 	prs := make([]pullrequest, 0, 0)
 
-	err := r.c.pagedRequest("/repositories/"+r.Name+"/pullrequests", &prs)
+	err := r.c.pagedRequest("/2.0/repositories/"+r.Name+"/pullrequests", &prs)
 	if err != nil {
 		return nil, err
 	}
