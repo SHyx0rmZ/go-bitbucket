@@ -82,8 +82,8 @@ func (c *client) Repositories() ([]bitbucket.Repository, error) {
 	return bitbucketRepositories, nil
 }
 
-func (c *client) getUrl(api_resource string) (url string) {
-	return strings.TrimRight(c.endpoint, "/") + api_resource
+func (c *client) getUrl(apiResource string) (url string) {
+	return strings.TrimRight(c.endpoint, "/") + apiResource
 }
 
 func (c *client) do(method string, url string, body io.Reader) (*http.Response, error) {
@@ -108,8 +108,8 @@ func (c *client) do(method string, url string, body io.Reader) (*http.Response, 
 	return response, nil
 }
 
-func (c *client) request(api_resource string, v interface{}) error {
-	response, err := c.do("GET", c.getUrl(api_resource), strings.NewReader(""))
+func (c *client) request(apiResource string, v interface{}) error {
+	response, err := c.do("GET", c.getUrl(apiResource), strings.NewReader(""))
 	if err != nil {
 		return err
 	}
@@ -134,13 +134,13 @@ func (c *client) request(api_resource string, v interface{}) error {
 	return nil
 }
 
-func (c *client) requestPost(api_resource string, v interface{}, data interface{}) error {
+func (c *client) requestPost(apiResource string, v interface{}, data interface{}) error {
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
 
-	response, err := c.do("POST", c.getUrl(api_resource), bytes.NewBuffer(jsonBytes))
+	response, err := c.do("POST", c.getUrl(apiResource), bytes.NewBuffer(jsonBytes))
 	if err != nil {
 		return err
 	}
@@ -179,7 +179,7 @@ type PagedResult struct {
 	NextPageURL string            `json:"next,omitempty"`
 }
 
-func (c *client) pagedRequest(api_resource string, v interface{}) error {
+func (c *client) pagedRequest(apiResource string, v interface{}) error {
 	resultValue := reflect.ValueOf(v)
 
 	if resultValue.Kind() != reflect.Ptr || resultValue.IsNil() {
@@ -189,7 +189,7 @@ func (c *client) pagedRequest(api_resource string, v interface{}) error {
 	resultList := reflect.ValueOf(v).Elem()
 	resultElemType := resultList.Type().Elem()
 
-	url := c.getUrl(api_resource)
+	url := c.getUrl(apiResource)
 
 	for {
 		var results PagedResult
