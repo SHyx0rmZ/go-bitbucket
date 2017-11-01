@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
+	"net/http"
 )
 
 var _ = Describe("", func() {
@@ -18,7 +19,7 @@ var _ = Describe("", func() {
 	BeforeEach(func() {
 		testServer = ghttp.NewServer()
 		testServer.Writer = GinkgoWriter
-		client, _ = server.NewClient(context.TODO(), testServer.URL())
+		client, _ = server.NewClient(context.TODO(), http.DefaultClient, testServer.URL())
 	})
 
 	AfterEach(func() {
