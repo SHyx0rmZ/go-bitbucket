@@ -1,0 +1,44 @@
+{
+  "pagelen": 50,
+  "values": [
+    {
+      "username": "some-user",
+      "website": "some-website",
+      "display_name": "some-display-name",
+      "account_id": null,
+      "links": {
+        "hooks": {
+          "href": "https://api.bitbucket.org/2.0/users/some-user/hooks"
+        },
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/users/some-user"
+        },
+        "repositories": {
+          "href": "https://api.bitbucket.org/2.0/repositories/some-user"
+        },
+        "html": {
+          "href": "https://bitbucket.org/some-user/"
+        },
+        "followers": {
+          "href": "https://api.bitbucket.org/2.0/users/some-user/followers"
+        },
+        "avatar": {
+          "href": "https://bitbucket.org/account/some-user/avatar/32/"
+        },
+        "following": {
+          "href": "https://api.bitbucket.org/2.0/users/some-user/following"
+        },
+        "snippets": {
+          "href": "https://api.bitbucket.org/2.0/snippets/some-user"
+        }
+      },
+      "created_on": "2010-10-20T05:10:20.000000+00:00",
+      "is_staff": false,
+      "location": null,
+      "type": "user",
+      "uuid": "{01234567-89ab-cdef-0123-456789abcdef}"
+    }
+  ],
+  "page": 1,
+  "size": 1
+}

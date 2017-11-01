@@ -1,0 +1,50 @@
+{
+  "size": 1,
+  "limit": 1,
+  "isLastPage": true,
+  "values": [
+    {
+      "slug": "some-slug",
+      "id": 101,
+      "name": "some-name",
+      "scmId": "git",
+      "state": "AVAILABLE",
+      "statusMessage": "Available",
+      "forkable": true,
+      "project": {
+        "key": "SOME",
+        "id": 18,
+        "name": "SOME",
+        "description": "some-description",
+        "public": false,
+        "type": "NORMAL",
+        "links": {
+          "self": [
+            {
+              "href": "http://bitbucket.example.com/projects/SOME"
+            }
+          ]
+        }
+      },
+      "public": true,
+      "links": {
+        "clone": [
+          {
+            "href": "http://some-user@bitbucket.example.com/scm/some/some-slug.git",
+            "name": "http"
+          },
+          {
+            "href": "ssh://git@bitbucket.example.com/sop/some-slug.git",
+            "name": "ssh"
+          }
+        ],
+        "self": [
+          {
+            "href": "http://bitbucket.example.com/projects/SOME/repos/some-slug/browse"
+          }
+        ]
+      }
+    }
+  ],
+  "start": 0
+}

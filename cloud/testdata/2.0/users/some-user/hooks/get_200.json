@@ -1,0 +1,80 @@
+{
+  "pagelen": 10,
+  "values": [
+    {
+      "read_only": true,
+      "description": "Pipelines",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/users/some-user/hooks/%7B01234567-89ab-cdef-0123-456789abcdef%7D"
+        }
+      },
+      "url": "https://bitbucket-pipelines.atlassian.io/rest/bitbucket/event/connect/onpush",
+      "created_at": "2010-10-20T05:10:20.000000Z",
+      "skip_cert_verification": false,
+      "source": "connect",
+      "active": true,
+      "subject": {
+        "username": "some-user",
+        "display_name": "some-display-name",
+        "type": "user",
+        "uuid": "{01234567-89ab-cdef-0123-456789abcdef}",
+        "links": {
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/users/some-user"
+          },
+          "html": {
+            "href": "https://bitbucket.org/some-user/"
+          },
+          "avatar": {
+            "href": "https://bitbucket.org/account/some-user/avatar/32/"
+          }
+        }
+      },
+      "type": "webhook_subscription",
+      "events": [
+        "repo:push"
+      ],
+      "uuid": "{01234567-89ab-cdef-0123-456789abcdef}"
+    },
+    {
+      "read_only": true,
+      "description": "Pipelines",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/users/some-user/hooks/%7B01234567-89ab-cdef-0123-456789abcdef%7D"
+        }
+      },
+      "url": "https://bitbucket-pipelines.atlassian.io/rest/bitbucket/event/connect/pullrequest",
+      "created_at": "2010-10-20T05:10:20.000000Z",
+      "skip_cert_verification": false,
+      "source": "connect",
+      "active": true,
+      "subject": {
+        "username": "some-user",
+        "display_name": "some-display-name",
+        "type": "user",
+        "uuid": "{01234567-89ab-cdef-0123-456789abcdef}",
+        "links": {
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/users/some-user"
+          },
+          "html": {
+            "href": "https://bitbucket.org/some-user/"
+          },
+          "avatar": {
+            "href": "https://bitbucket.org/account/some-user/avatar/32/"
+          }
+        }
+      },
+      "type": "webhook_subscription",
+      "events": [
+        "pullrequest:updated",
+        "pullrequest:created"
+      ],
+      "uuid": "{01234567-89ab-cdef-0123-456789abcdef}"
+    }
+  ],
+  "page": 1,
+  "size": 2
+}

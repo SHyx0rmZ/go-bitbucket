@@ -1,0 +1,23 @@
+{
+  "size": 25,
+  "limit": 25,
+  "isLastPage": true,
+  "values": [
+    {
+      "key": "SOME",
+      "id": 101,
+      "name": "some-name",
+      "description": "some-description",
+      "public": false,
+      "type": "NORMAL",
+      "links": {
+        "self": [
+          {
+            "href": "http://bitbucket.example.com/projects/SOME"
+          }
+        ]
+      }
+    }
+  ],
+  "start": 0
+}

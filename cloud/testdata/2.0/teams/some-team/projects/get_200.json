@@ -1,0 +1,48 @@
+{
+  "pagelen": 10,
+  "values": [
+    {
+      "uuid": "{01234567-89ab-cdef-0123-456789abcdef}",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/teams/some-team/projects/SOME"
+        },
+        "html": {
+          "href": "https://bitbucket.org/account/user/some-team/projects/SOME"
+        },
+        "repositories": {
+          "href": "https://api.bitbucket.org/2.0/repositories/some-team?q='project.key=\"SOME\"'"
+        },
+        "avatar": {
+          "href": "https://bitbucket.org/account/user/some-team/projects/SOME/avatar/32"
+        }
+      },
+      "description": "",
+      "created_on": "2010-10-20T05:10:20.000000+00:00",
+      "key": "SOME",
+      "owner": {
+        "username": "some-team",
+        "display_name": "some-display-name",
+        "type": "team",
+        "uuid": "{01234567-89ab-cdef-0123-456789abcdef}",
+        "links": {
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/teams/some-team"
+          },
+          "html": {
+            "href": "https://bitbucket.org/some-team/"
+          },
+          "avatar": {
+            "href": "https://bitbucket.org/account/some-team/avatar/32/"
+          }
+        }
+      },
+      "updated_on": "2010-10-20T05:10:20.000000+00:00",
+      "type": "project",
+      "is_private": true,
+      "name": "some-project"
+    }
+  ],
+  "page": 1,
+  "size": 1
+}
