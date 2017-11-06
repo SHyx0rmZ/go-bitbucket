@@ -102,7 +102,23 @@ func (c *client) Repository(name string) (bitbucket.Repository, error) {
 }
 
 func (c *client) Repositories() ([]bitbucket.Repository, error) {
-	return nil, nil
+	repositories := make([]repository, 0, 0)
+
+	err := c.pagedRequest("/rest/api/1.0/repos?permission=REPO_WRITE", &repositories)
+	if err != nil {
+		return nil, err
+	}
+
+	bitbucketRepositories := make([]bitbucket.Repository, len(repositories))
+	for index := range repositories {
+		bitbucketRepositories[index] = &repositories[index]
+	}
+
+	return bitbucketRepositories, nil
+}
+
+func (c *client) CreateRepository(path string) (bitbucket.Repository, error) {
+	return nil, errors.New("not yet implemented")
 }
 
 func (c *client) CurrentUser() (string, error) {
@@ -240,7 +256,11 @@ func (c *client) pagedRequest(url string, v interface{}) error {
 		fullUrl := url
 
 		if pageStart != nil {
-			fullUrl += "?start=" + strconv.Itoa(*pageStart)
+			if strings.Contains(fullUrl, "?") {
+				fullUrl += "&start=" + strconv.Itoa(*pageStart)
+			} else {
+				fullUrl += "?start=" + strconv.Itoa(*pageStart)
+			}
 		}
 
 		var results PagedResult

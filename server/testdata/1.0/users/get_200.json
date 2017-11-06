@@ -1,0 +1,17 @@
+{
+  "size": 1,
+  "limit": 1,
+  "isLastPage": true,
+  "values": [
+    {
+      "name": "some-user",
+      "emailAddress": "some-email@example.com",
+      "id": 101,
+      "displayName": "some-display-name",
+      "active": true,
+      "slug": "suser",
+      "type": "NORMAL"
+    }
+  ],
+  "start": 0
+}

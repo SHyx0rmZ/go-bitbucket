@@ -11,30 +11,30 @@ import (
 	"strings"
 )
 
-type client struct {
+type Client struct {
 	httpClient *http.Client
 	endpoint   string
 	auth       bitbucket.Auth
 }
 
-func NewClient(httpClient *http.Client, endpoint string) (bitbucket.Client, error) {
+func NewClient(httpClient *http.Client, endpoint string) (*Client, error) {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
 	if endpoint == "" {
 		endpoint = "https://api.bitbucket.org/"
 	}
-	return &client{
+	return &Client{
 		httpClient: httpClient,
 		endpoint:   endpoint,
 	}, nil
 }
 
-func (c *client) SetBasicAuth(auth *bitbucket.BasicAuth) {
+func (c *Client) SetBasicAuth(auth *bitbucket.BasicAuth) {
 	c.auth = auth
 }
 
-func (c *client) CurrentUser() (string, error) {
+func (c *Client) CurrentUser() (string, error) {
 	var u user
 
 	err := c.request("/2.0/user", &u)
@@ -45,16 +45,20 @@ func (c *client) CurrentUser() (string, error) {
 	return u.Name, nil
 }
 
-func (c *client) Users() ([]bitbucket.User, error) {
+func (c *Client) Users() ([]bitbucket.User, error) {
 	/* Bitbucket cloud does not allow access to a list of all users. */
 	return []bitbucket.User{}, nil
 }
 
-func (c *client) Projects() ([]bitbucket.Project, error) {
+func (c *Client) Projects() ([]bitbucket.Project, error) {
 	return nil, errors.New("not implemented")
 }
 
-func (c *client) Repository(path string) (bitbucket.Repository, error) {
+func (c *Client) CreateRepository(path string) (bitbucket.Repository, error) {
+	return nil, errors.New("not yet implemented")
+}
+
+func (c *Client) Repository(path string) (bitbucket.Repository, error) {
 	var r repository
 
 	if strings.Contains(path, "..") {
@@ -66,7 +70,7 @@ func (c *client) Repository(path string) (bitbucket.Repository, error) {
 	return &r, nil
 }
 
-func (c *client) Repositories() ([]bitbucket.Repository, error) {
+func (c *Client) Repositories() ([]bitbucket.Repository, error) {
 	repositories := make([]repository, 0, 0)
 
 	err := c.pagedRequest("/2.0/repositories?role=member", &repositories)
@@ -82,11 +86,22 @@ func (c *client) Repositories() ([]bitbucket.Repository, error) {
 	return bitbucketRepositories, nil
 }
 
-func (c *client) getUrl(apiResource string) (url string) {
+func (c *Client) Teams() ([]team, error) {
+	teams := make([]team, 0, 0)
+
+	err := c.pagedRequest("/2.0/teams", &teams)
+	if err != nil {
+		return nil, err
+	}
+
+	return teams, nil
+}
+
+func (c *Client) getUrl(apiResource string) (url string) {
 	return strings.TrimRight(c.endpoint, "/") + apiResource
 }
 
-func (c *client) do(method string, url string, body io.Reader) (*http.Response, error) {
+func (c *Client) do(method string, url string, body io.Reader) (*http.Response, error) {
 	request, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
@@ -108,7 +123,7 @@ func (c *client) do(method string, url string, body io.Reader) (*http.Response, 
 	return response, nil
 }
 
-func (c *client) request(apiResource string, v interface{}) error {
+func (c *Client) request(apiResource string, v interface{}) error {
 	response, err := c.do("GET", c.getUrl(apiResource), strings.NewReader(""))
 	if err != nil {
 		return err
@@ -134,7 +149,7 @@ func (c *client) request(apiResource string, v interface{}) error {
 	return nil
 }
 
-func (c *client) requestPost(apiResource string, v interface{}, data interface{}) error {
+func (c *Client) requestPost(apiResource string, v interface{}, data interface{}) error {
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -166,10 +181,10 @@ func (c *client) requestPost(apiResource string, v interface{}, data interface{}
 }
 
 type clientAware interface {
-	SetClient(c *client)
+	SetClient(c *Client)
 }
 
-func (c *client) SetHTTPClient(hc *http.Client) {
+func (c *Client) SetHTTPClient(hc *http.Client) {
 	c.httpClient = hc
 }
 
@@ -179,7 +194,7 @@ type PagedResult struct {
 	NextPageURL string            `json:"next,omitempty"`
 }
 
-func (c *client) pagedRequest(apiResource string, v interface{}) error {
+func (c *Client) pagedRequest(apiResource string, v interface{}) error {
 	resultValue := reflect.ValueOf(v)
 
 	if resultValue.Kind() != reflect.Ptr || resultValue.IsNil() {

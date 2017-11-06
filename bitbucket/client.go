@@ -13,6 +13,7 @@ type Client interface {
 	Repositories() ([]Repository, error)
 	Repository(path string) (Repository, error)
 	SetHTTPClient(client *http.Client)
+	CreateRepository(path string) (Repository, error)
 }
 
 //

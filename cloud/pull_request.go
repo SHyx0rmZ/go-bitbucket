@@ -10,7 +10,7 @@ type mergeEndpoint struct {
 }
 
 type pullrequest struct {
-	client *client
+	client *Client
 
 	Id          int           `json:"id"`
 	Title       string        `json:"title"`
@@ -56,6 +56,6 @@ func (pr *pullrequest) GetToRef() string {
 	return pr.Destination.Commit.Hash
 }
 
-func (pr *pullrequest) SetClient(c *client) {
+func (pr *pullrequest) SetClient(c *Client) {
 	pr.client = c
 }

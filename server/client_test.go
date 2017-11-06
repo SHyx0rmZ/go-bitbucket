@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -31,7 +32,7 @@ var _ = Describe("", func() {
 		Expect(client).ToNot(BeNil())
 	})
 
-	Describe("", func() {
+	Describe("client", func() {
 		It("returns no projects from an empty result", func() {
 			testServer.AppendHandlers(
 				ghttp.CombineHandlers(
@@ -68,5 +69,38 @@ var _ = Describe("", func() {
 		Expect(err).To(BeNil())
 		Expect(p).ToNot(BeEmpty())
 		Expect(len(p)).To(Equal(2))
+	})
+
+	It("can retrieve the current user", func() {
+		header := http.Header{}
+		header.Add("X-Ausername", "some-user")
+
+		testServer.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/rest/api/1.0/users"),
+				ghttp.RespondWith(200, `{}`, header),
+			),
+		)
+
+		user, err := client.CurrentUser()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(user).To(Equal("some-user"))
+	})
+
+	It("can retrieve a list of users", func() {
+		resp, err := ioutil.ReadFile("testdata/1.0/users/get_200.json")
+		Expect(err).ToNot(HaveOccurred())
+
+		testServer.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/rest/api/1.0/users"),
+				ghttp.RespondWith(200, resp),
+			),
+		)
+
+		users, err := client.Users()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(len(users)).To(Equal(1))
+		Expect(users[0].GetName()).To(Equal("some-user"))
 	})
 })

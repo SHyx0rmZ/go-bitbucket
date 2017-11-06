@@ -9,10 +9,10 @@ type repository struct {
 	DisplayName string `json:"name"`
 	Type        string `json:"type"`
 
-	c *client
+	c *Client
 }
 
-func (r *repository) SetClient(c *client) {
+func (r *repository) SetClient(c *Client) {
 	r.c = c
 }
 
