@@ -1,7 +1,7 @@
 package server
 
 type user struct {
-	client *client
+	client *Client
 
 	Name         string `json:"name"`
 	EmailAddress string `json:"emailAddress"`
@@ -12,7 +12,7 @@ type user struct {
 	Type         string `json:"type"`
 }
 
-func (u *user) SetClient(c *client) {
+func (u *user) SetClient(c *Client) {
 	u.client = c
 }
 

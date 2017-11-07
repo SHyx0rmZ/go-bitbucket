@@ -1,7 +1,7 @@
 package server
 
 type pullRequest struct {
-	client *client
+	client *Client
 
 	ID          int    `json:"id"`
 	Version     int    `json:"version"`
@@ -56,7 +56,7 @@ type reviewer struct {
 	Status             string `json:"status"`
 }
 
-func (p *pullRequest) SetClient(c *client) {
+func (p *pullRequest) SetClient(c *Client) {
 	p.client = c
 	p.Author.User.SetClient(c)
 

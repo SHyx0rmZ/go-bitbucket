@@ -3,7 +3,7 @@ package server
 import "github.com/SHyx0rmZ/go-bitbucket/bitbucket"
 
 type project struct {
-	client *client
+	client *Client
 
 	Key         string `json:"key"`
 	ID          int    `json:"id"`
@@ -13,7 +13,7 @@ type project struct {
 	Type        string `json:"type"`
 }
 
-func (p *project) SetClient(c *client) {
+func (p *project) SetClient(c *Client) {
 	p.client = c
 }
 
@@ -29,14 +29,10 @@ func (p *project) Repositories() ([]bitbucket.Repository, error) {
 		return nil, err
 	}
 
-	bitbucketRepositories := make([]bitbucket.Repository, 0, len(repositories))
+	bitbucketRepositories := make([]bitbucket.Repository, len(repositories))
 
-	for _, repository := range repositories {
-		//if ca, ok := repository.Project.(clientAware); ok {
-		//	ca.SetClient(p.client)
-		//}
-
-		bitbucketRepositories = append(bitbucketRepositories, &repository)
+	for i := range repositories {
+		bitbucketRepositories[i] = &repositories[i]
 	}
 
 	return bitbucketRepositories, nil

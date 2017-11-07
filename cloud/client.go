@@ -65,7 +65,10 @@ func (c *Client) Repository(path string) (bitbucket.Repository, error) {
 		return nil, errors.New("no recursive paths allowed")
 	}
 
-	c.request("/2.0/repositories/"+path, &r)
+	err := c.request("/2.0/repositories/"+path, &r)
+	if err != nil {
+		return nil, err
+	}
 
 	return &r, nil
 }
@@ -90,6 +93,17 @@ func (c *Client) Teams() ([]team, error) {
 	teams := make([]team, 0, 0)
 
 	err := c.pagedRequest("/2.0/teams", &teams)
+	if err != nil {
+		return nil, err
+	}
+
+	return teams, nil
+}
+
+func (c *Client) TeamsWithRole(role string) ([]team, error) {
+	teams := make([]team, 0, 0)
+
+	err := c.pagedRequest("/2.0/teams?role="+role, &teams)
 	if err != nil {
 		return nil, err
 	}

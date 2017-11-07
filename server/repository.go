@@ -6,7 +6,7 @@ import (
 )
 
 type repository struct {
-	client *client
+	client *Client
 
 	Slug                      string  `json:"slug"`
 	ID                        int     `json:"id"`
@@ -31,7 +31,7 @@ func (r *repository) GetSlug() string {
 	return r.Slug
 }
 
-func (r *repository) SetClient(c *client) {
+func (r *repository) SetClient(c *Client) {
 	r.client = c
 	r.Project.SetClient(c)
 }

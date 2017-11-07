@@ -19,7 +19,7 @@ var endpoint = os.Getenv("BITBUCKET_SERVER_TESTING_ENDPOINT")
 var username = os.Getenv("BITBUCKET_SERVER_TESTING_USERNAME")
 var password = os.Getenv("BITBUCKET_SERVER_TESTING_PASSWORD")
 
-var client bitbucket.Client
+var client *server.Client
 
 var _ = BeforeSuite(func() {
 	if endpoint != "" {

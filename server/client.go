@@ -7,29 +7,30 @@ import (
 	"errors"
 	"github.com/SHyx0rmZ/go-bitbucket/bitbucket"
 	"io"
+	"math/rand"
 	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
 )
 
-type client struct {
+type Client struct {
 	endpoint string
 	client   *http.Client
 	auth     bitbucket.Auth
 }
 
 type clientAware interface {
-	SetClient(c *client)
+	SetClient(c *Client)
 }
 
-func NewClient(ctx context.Context, hc *http.Client, endpoint string) (bitbucket.Client, error) {
+func NewClient(ctx context.Context, hc *http.Client, endpoint string) (*Client, error) {
 	if hc == nil {
 		hc = contextHTTPClient(ctx)
 	}
 	auth := contextBitbucketAuth(ctx)
 
-	return &client{
+	return &Client{
 		endpoint: endpoint,
 		client:   hc,
 		auth:     auth,
@@ -54,7 +55,56 @@ func contextHTTPClient(ctx context.Context) *http.Client {
 	return http.DefaultClient
 }
 
-func (c *client) Projects() ([]bitbucket.Project, error) {
+func (c *Client) CreateProject() (bitbucket.Project, error) {
+	proj := project{
+		Key:         "BSIS-" + strconv.Itoa(rand.Intn(9999)),
+		Name:        "Bitbucket Server Integration Suite",
+		Description: "Project created while running Bitbucket Server Integration Suite",
+		Public:      false,
+	}
+
+	var fullProject project
+
+	err := c.requestPost("/rest/api/1.0/projects", &fullProject, proj)
+	if err != nil {
+		return nil, err
+	}
+
+	return &fullProject, nil
+}
+
+func (c *Client) CreateRepository(path string) (bitbucket.Repository, error) {
+	return nil, errors.New("not yet implemented")
+}
+
+func (c *Client) CurrentUser() (string, error) {
+	response, err := c.do("GET", "/rest/api/1.0/users?limit=0", strings.NewReader(""))
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return "", errors.New(response.Status)
+	}
+
+	return response.Header.Get("X-Ausername"), nil
+}
+
+func (c *Client) DeleteProject(id string) error {
+	resp, err := c.do("DELETE", "/rest/api/1.0/projects/"+id, nil)
+	if err != nil {
+		return err
+	}
+
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	return nil
+}
+
+func (c *Client) Projects() ([]bitbucket.Project, error) {
 	projects := make([]project, 0, 0)
 
 	err := c.pagedRequest("/rest/api/1.0/projects", &projects)
@@ -71,7 +121,23 @@ func (c *client) Projects() ([]bitbucket.Project, error) {
 	return bitbucketProjects, nil
 }
 
-func (c *client) Repository(name string) (bitbucket.Repository, error) {
+func (c *Client) Repositories() ([]bitbucket.Repository, error) {
+	repositories := make([]repository, 0, 0)
+
+	err := c.pagedRequest("/rest/api/1.0/repos?permission=REPO_WRITE", &repositories)
+	if err != nil {
+		return nil, err
+	}
+
+	bitbucketRepositories := make([]bitbucket.Repository, len(repositories))
+	for index := range repositories {
+		bitbucketRepositories[index] = &repositories[index]
+	}
+
+	return bitbucketRepositories, nil
+}
+
+func (c *Client) Repository(name string) (bitbucket.Repository, error) {
 	var url string
 
 	components := strings.Split(name, "/")
@@ -101,41 +167,11 @@ func (c *client) Repository(name string) (bitbucket.Repository, error) {
 	return &result, nil
 }
 
-func (c *client) Repositories() ([]bitbucket.Repository, error) {
-	repositories := make([]repository, 0, 0)
-
-	err := c.pagedRequest("/rest/api/1.0/repos?permission=REPO_WRITE", &repositories)
-	if err != nil {
-		return nil, err
-	}
-
-	bitbucketRepositories := make([]bitbucket.Repository, len(repositories))
-	for index := range repositories {
-		bitbucketRepositories[index] = &repositories[index]
-	}
-
-	return bitbucketRepositories, nil
+func (c *Client) SetHTTPClient(hc *http.Client) {
+	c.client = hc
 }
 
-func (c *client) CreateRepository(path string) (bitbucket.Repository, error) {
-	return nil, errors.New("not yet implemented")
-}
-
-func (c *client) CurrentUser() (string, error) {
-	response, err := c.do("GET", "/rest/api/1.0/users?limit=0", strings.NewReader(""))
-	if err != nil {
-		return "", err
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode != 200 {
-		return "", errors.New(response.Status)
-	}
-
-	return response.Header.Get("X-Ausername"), nil
-}
-
-func (c *client) Users() ([]bitbucket.User, error) {
+func (c *Client) Users() ([]bitbucket.User, error) {
 	users := make([]user, 0, 0)
 
 	err := c.pagedRequest("/rest/api/1.0/users", &users)
@@ -151,11 +187,7 @@ func (c *client) Users() ([]bitbucket.User, error) {
 	return bitbucketUsers, nil
 }
 
-func (c *client) SetHTTPClient(hc *http.Client) {
-	c.client = hc
-}
-
-func (c *client) do(method string, url string, body io.Reader) (*http.Response, error) {
+func (c *Client) do(method string, url string, body io.Reader) (*http.Response, error) {
 	request, err := http.NewRequest(method, strings.TrimRight(c.endpoint, "/")+url, body)
 	if err != nil {
 		return nil, err
@@ -177,70 +209,7 @@ func (c *client) do(method string, url string, body io.Reader) (*http.Response, 
 	return response, nil
 }
 
-func (c *client) request(url string, v interface{}) error {
-	response, err := c.do("GET", url, strings.NewReader(""))
-	if err != nil {
-		return err
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode != 200 {
-		return errors.New(response.Status)
-	}
-
-	decoder := json.NewDecoder(response.Body)
-
-	err = decoder.Decode(v)
-	if err != nil {
-		return err
-	}
-
-	if ca, ok := v.(*clientAware); ok {
-		(*ca).SetClient(c)
-	}
-
-	return nil
-}
-
-func (c *client) requestPost(url string, v interface{}, data interface{}) error {
-	jsonBytes, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
-
-	response, err := c.do("POST", url, bytes.NewBuffer(jsonBytes))
-	if err != nil {
-		return err
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode != 201 {
-		return errors.New(response.Status)
-	}
-
-	decoder := json.NewDecoder(response.Body)
-
-	err = decoder.Decode(v)
-	if err != nil {
-		return err
-	}
-
-	if ca, ok := v.(*clientAware); ok {
-		(*ca).SetClient(c)
-	}
-
-	return nil
-}
-
-type PagedResult struct {
-	IsLastPage    bool              `json:"isLastPage"`
-	Values        []json.RawMessage `json:"values,omitempty"`
-	NextPageStart *int              `json:"nextPageStart"`
-}
-
-func (c *client) pagedRequest(url string, v interface{}) error {
+func (c *Client) pagedRequest(url string, v interface{}) error {
 	resultValue := reflect.ValueOf(v)
 
 	if resultValue.Kind() != reflect.Ptr || resultValue.IsNil() {
@@ -293,4 +262,91 @@ func (c *client) pagedRequest(url string, v interface{}) error {
 	}
 
 	return nil
+}
+
+func (c *Client) request(url string, v interface{}) error {
+	response, err := c.do("GET", url, strings.NewReader(""))
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return errors.New(response.Status)
+	}
+
+	decoder := json.NewDecoder(response.Body)
+
+	err = decoder.Decode(v)
+	if err != nil {
+		return err
+	}
+
+	if ca, ok := v.(*clientAware); ok {
+		(*ca).SetClient(c)
+	}
+
+	return nil
+}
+
+type Errors struct {
+	Errors []struct {
+		Context       *string `json:"context,omitempty"`
+		Message       *string `json:"message,omitempty"`
+		ExceptionName *string `json:"exceptionName,omitempty"`
+	} `json:"errors"`
+}
+
+func (c *Client) requestPost(url string, v interface{}, data interface{}) error {
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	response, err := c.do("POST", url, bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode != 201 {
+		var errs Errors
+		_ = json.NewDecoder(response.Body).Decode(&errs)
+		err := bitbucket.NewError(response.Status)
+		if errs.Errors != nil && len(errs.Errors) > 0 {
+			if errs.Errors[0].Context != nil {
+				err = err.WithContext(*errs.Errors[0].Context)
+			}
+
+			if errs.Errors[0].Message != nil {
+				err = err.WithMessage(*errs.Errors[0].Message)
+			}
+
+			if errs.Errors[0].ExceptionName != nil {
+				err = err.WithExceptionName(*errs.Errors[0].ExceptionName)
+			}
+		}
+		return err
+	}
+
+	decoder := json.NewDecoder(response.Body)
+
+	err = decoder.Decode(v)
+	if err != nil {
+		return err
+	}
+
+	if ca, ok := v.(*clientAware); ok {
+		(*ca).SetClient(c)
+	}
+
+	return nil
+}
+
+type PagedResult struct {
+	IsLastPage    bool              `json:"isLastPage"`
+	Values        []json.RawMessage `json:"values,omitempty"`
+	NextPageStart *int              `json:"nextPageStart"`
 }
